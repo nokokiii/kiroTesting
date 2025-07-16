@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -8,6 +8,19 @@ const prisma = new PrismaClient();
 
 // Store invalidated tokens (in production, use Redis or database)
 const invalidatedTokens = new Set<string>();
+
+const generateToken = (userId: string): string => {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET not configured');
+  }
+
+  const options: SignOptions = { 
+    expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as string
+  };
+  
+  return jwt.sign({ userId }, jwtSecret, options);
+};
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -61,16 +74,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET not configured');
-    }
-
-    const token = jwt.sign(
-      { userId: user.id },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
@@ -133,16 +137,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET not configured');
-    }
-
-    const token = jwt.sign(
-      { userId: user.id },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    const token = generateToken(user.id);
 
     // Return user data without password hash
     const { passwordHash, ...userWithoutPassword } = user;

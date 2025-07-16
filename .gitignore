@@ -8,8 +8,8 @@ pnpm-lock.yaml
 .pnp.js
 
 # Build outputs
-/build
-/dist
+build/
+dist/
 *.tsbuildinfo
 .next/
 out/
@@ -18,7 +18,10 @@ out/
 # Environment files
 .env
 .env.*
-*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Database files
 *.sqlite3
@@ -29,7 +32,7 @@ out/
 logs/
 
 # Testing
-/coverage
+coverage/
 .pytest_cache/
 test-results/
 
@@ -65,3 +68,12 @@ Desktop.ini
 
 # Security / Certificates
 *.pem
+
+# Monorepo specific - ignore nested git repositories
+**/.git/
+**/.gitignore
+!.gitignore
+
+# Project specific build outputs
+**/build/
+**/dist/
