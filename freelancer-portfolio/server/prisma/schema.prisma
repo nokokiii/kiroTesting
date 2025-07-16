@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  email          String   @unique
+  passwordHash   String
+  name           String?
+  jobTitle       String?
+  bio            String?
+  profilePicture String?
+  theme          Theme    @default(LIGHT)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  projects       Project[]
+  skills         Skill[]
+  experiences    Experience[]
+  contactMessages ContactMessage[]
+  portfolioViews PortfolioView[]
+
+  @@map("users")
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  userId       String
+  title        String
+  description  String
+  image        String?
+  technologies String[] // Array of technology names
+  projectUrl   String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+model Skill {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  type         SkillType @default(TEXT)
+  iconUrl      String?
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+model Experience {
+  id           String         @id @default(cuid())
+  userId       String
+  type         ExperienceType
+  title        String
+  description  String
+  startDate    DateTime
+  endDate      DateTime?
+  displayOrder Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("experiences")
+}
+
+model ContactMessage {
+  id               String   @id @default(cuid())
+  portfolioUserId  String
+  senderName       String
+  senderEmail      String
+  message          String
+  isRead           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  // Relations
+  portfolioUser User @relation(fields: [portfolioUserId], references: [id], onDelete: Cascade)
+
+  @@map("contact_messages")
+}
+
+model PortfolioView {
+  id               String   @id @default(cuid())
+  portfolioUserId  String
+  viewerIp         String   // Hashed IP for privacy
+  userAgent        String?
+  referrer         String?
+  viewedAt         DateTime @default(now())
+
+  // Relations
+  portfolioUser User @relation(fields: [portfolioUserId], references: [id], onDelete: Cascade)
+
+  @@map("portfolio_views")
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
+
+enum SkillType {
+  TEXT
+  ICON
+}
+
+enum ExperienceType {
+  WORK
+  EDUCATION
+}
