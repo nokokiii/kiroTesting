@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -15,8 +15,8 @@ const generateToken = (userId: string): string => {
     throw new Error('JWT_SECRET not configured');
   }
 
-  const options: SignOptions = { 
-    expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as string
+  const options = { 
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   };
   
   return jwt.sign({ userId }, jwtSecret, options);
