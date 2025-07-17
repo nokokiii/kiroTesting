@@ -14,12 +14,8 @@ const generateToken = (userId: string): string => {
   if (!jwtSecret) {
     throw new Error('JWT_SECRET not configured');
   }
-
-  const options = { 
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
-  };
   
-  return jwt.sign({ userId }, jwtSecret, options);
+  return jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
 };
 
 export const register = async (req: Request, res: Response) => {
